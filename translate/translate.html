@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>多翻译引擎</title>
+    <script>
+
+        let googleCn;
+
+        window.onload = (event) => {
+
+            googleCn = window.open(
+                "http://localhost:82/",
+                "google-cn");
+
+
+            //SecurityError: Permission denied to access property "document" on cross-origin object
+            //同源策略需要设置一样的地址
+            document.domain = document.domain;
+        };
+
+        function translateC() {
+
+        }
+
+    </script>
+</head>
+
+<body>
+
+    <!--需要翻译的文本-->
+    <textarea id="translate"> The quick brown fox jumps over the lazy dog. </textarea>
+
+    <!--翻译结果-->
+    <div id="translateDiv">
+
+    </div>
+    <input type="button" onclick="translateC" value="翻译" />
+
+    <!--需要翻译的单词-->
+    <input id="dict" />
+    <!--翻译结果-->
+    <div id="dictDiv">
+
+    </div>
+
+
+</body>
+
+</html>
