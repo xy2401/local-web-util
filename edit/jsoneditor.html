@@ -157,7 +157,7 @@
             marksPosition.forEach(position0 => {
                 position0[0].forEach(position00 => {
                     position0[1].filter(position01 => position01 > position00).forEach(position01 => {
-                        let text = chaosTextStr.substr(position00, position01);
+                        let text = chaosTextStr.substr(position00, position01+1);
                         try {
                             let obj = JSON.parse(text);
                             jsonList.push([text, obj]);
