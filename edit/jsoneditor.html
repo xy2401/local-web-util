@@ -157,7 +157,7 @@
             marksPosition.forEach(position0 => {
                 position0[0].forEach(position00 => {
                     position0[1].filter(position01 => position01 > position00).forEach(position01 => {
-                        let text = chaosTextStr.substr(position00, position01+1);
+                        let text = chaosTextStr.substring(position00, position01 + 1);
                         try {
                             let obj = JSON.parse(text);
                             jsonList.push([text, obj]);
@@ -168,7 +168,7 @@
             });
             //排序
             console.log(jsonList);
-            jsonList.sort((a, b) => a[0].length - b[0].length);
+            jsonList.sort((a, b) => b[0].length - a[0].length);
             console.log('find json string length :' + jsonList.length);
             if (jsonList.length > 0) {
                 editor.set(jsonList[0][1]);
