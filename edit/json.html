@@ -65,7 +65,7 @@
         let jsons = [];//匹配二维二维数组 0是字符串 1是json对象 2 是对象名
         function radioChange() {
             let replacer = replacerInput.value.split(" ").filter(str => str.length > 0);
-            console.log(replacer);
+            //console.log(replacer);
             if (replacer.length == 0) {
                 replacer = null;//为空则是全部显示
             }
@@ -101,16 +101,17 @@
             for (let prop in obj) {
                 //如果此属性是 字符串 判断是否是json
                 if (typeof obj[prop] === 'string') {
-                    console.log('String ' + obj[prop]);
+                    //console.log('String ' + obj[prop]);
                     let chaosText2 = chaosTextExtract(obj[prop]);
                     if (chaosText2 && chaosText2.length > 0) {
-                        jsons.push([...chaosText2, name + ' => ' + prop]);
+                        jsons.push([...chaosText2, name + '.' + prop]);
+                        extractObj(chaosText2[1], name + '.' + prop);
                     }
                 } else if (typeof obj[prop] === 'object') {
                     //递归调用
-                    extractObj(obj[prop], name + ' => ' + prop)
+                    extractObj(obj[prop], name + '.' + prop);
                 }
-                console.log("obj." + prop + " = " + obj[prop]);
+                //console.log("obj." + prop + " = " + obj[prop]);
             }
         }
 
@@ -149,7 +150,7 @@
                             let obj = JSON.parse(text);
                             jsonList.push([text, obj]);
                         } catch (error) {
-                            console.log("error:" + text);
+                            //console.log("error:" + text);
                             try {
                                 let textEval = text;
                                 while (true) {
@@ -159,25 +160,25 @@
 
 
                                         textEval = eval("`" + text + "`");
-                                        console.log('textEval:' + textEval);
+                                        //console.log('textEval:' + textEval);
                                     } catch (errorEval) {
-                                        console.log(errorEval);
+                                        //console.log(errorEval);
                                     }
 
                                     if (text == textEval) {//无法再转义了
-                                        console.log('break1');
+                                        //console.log('break1');
                                         break;
                                     }
                                     try {
                                         let obj = JSON.parse(textEval);
                                         jsonList.push([textEval, obj]);
-                                        console.log('break2');
+                                        //console.log('break2');
                                         break;
                                     } catch (error) {
 
                                     }
                                     text = textEval;//下一次循环 
-                                    console.log("for end")
+                                    //console.log("for end")
                                 }
                             } catch (error2) {
 
@@ -195,10 +196,10 @@
             //         //下标未达到 且 比启示大 且 还未找到
             //         for (let i = 0; i < position0[1].length && position0[1][i] > position00 && !findFlag; i++) {
             //             let text = chaosTextStr.substring(position00, position0[1][i] + 1);
-            //             console.log("chaosTextStr.substring");
+            //             //console.log("chaosTextStr.substring");
             //             try {
-            //                 // console.log("position:" + position00 + "  " + position01);
-            //                 // console.log("text:" + text);
+            //                 // //console.log("position:" + position00 + "  " + position01);
+            //                 // //console.log("text:" + text);
             //                 let obj = JSON.parse(text);
             //                 jsonList.push([text, obj]);
             //                 findFlag = true;
@@ -207,16 +208,16 @@
             //                 // if (text.indexOf("\\") > 0) {
             //                 //     try {
             //                 //         text = eval("'" + text + "'");
-            //                 //         console.log("try text:" + text);
+            //                 //         //console.log("try text:" + text);
             //                 //         let obj = JSON.parse(text);
             //                 //         jsonList.push([text, obj]);
             //                 //     } catch (error2) {
-            //                 //         console.log(error2);
+            //                 //         //console.log(error2);
 
             //                 //     }
             //                 // }
             //                 //尝试转义
-            //                 // console.log(error);
+            //                 // //console.log(error);
 
             //             }
 
@@ -231,9 +232,9 @@
             //     });
             // });
             //排序
-            console.log(jsonList);
+            //console.log(jsonList);
             jsonList.sort((a, b) => b[0].length - a[0].length);
-            console.log('find json string length :' + jsonList.length);
+            //console.log('find json string length :' + jsonList.length);
             if (jsonList.length > 0) {
                 return jsonList[0];
             }
