@@ -21,14 +21,48 @@
 <body>
 
     <p>
+        <details>
+            <summary>说明</summary>
+
+
+            测试数据
+            <select onchange=" chaosTextarea.value = document.getElementById(this.value).value">
+                <option value="demoStr0">清空</option>
+                <option value="demoStr1">标准日志</option>
+                <option value="demoStr2">声明为变量值后转义字符</option>
+            </select>
+
+        </details>
+
+
+
+        <!-- 测试数据隐藏区域 -->
+        <div style="display: none">
+
+            <!-- 空数据 -->
+            <textarea id="demoStr0"></textarea>
+            <!-- 标准日志 -->
+            <textarea id="demoStr1">2019-07-28 15:52:30.013  INFO 9272 --- [           main] com.example.demo.DemoApplication         : person:{"firstName":"John","lastName":"Smith","isAlive":true,"age":27,"address":{"streetAddress":"21 2nd Street","city":"New York","state":"NY","postalCode":"10021-3100","area":"{\"Total\":\"468.484 sq mi (1,213.37 km2)\",\"Land\":\"302.643 sq mi (783.84 km2)\",\"Water\":\"165.841 sq mi (429.53 km2)\",\"Metro\":\"Hello 13,318 sq mi (34,490 km2)\"}"},"phoneNumbers":[{"type":"home","number":"212 555-1234"},{"type":"office","number":"646 555-4567"},{"type":"mobile","number":"123 456-7890"}],"children":[],"spouse":null,"extra":"{\"Array\":[1,2,3],\"Boolean\":true,\"Null\":null,\"Number\":123,\"Object\":{\"a\":\"b\",\"c\":\"d\"},\"String\":\"Hello World\"}"}
+                    </textarea>
+
+            <!--声明为变量值后转义字符-->
+            <textarea id="demoStr2">String log = "2019-07-28 15:52:30.013  INFO 9272 --- [           main] com.example.demo.DemoApplication         : person:{\"firstName\":\"John\",\"lastName\":\"Smith\",\"isAlive\":true,\"age\":27,\"address\":{\"streetAddress\":\"21 2nd Street\",\"city\":\"New York\",\"state\":\"NY\",\"postalCode\":\"10021-3100\",\"area\":\"{\\\"Total\\\":\\\"468.484 sq mi (1,213.37 km2)\\\",\\\"Land\\\":\\\"302.643 sq mi (783.84 km2)\\\",\\\"Water\\\":\\\"165.841 sq mi (429.53 km2)\\\",\\\"Metro\\\":\\\"Hello 13,318 sq mi (34,490 km2)\\\"}\"},\"phoneNumbers\":[{\"type\":\"home\",\"number\":\"212 555-1234\"},{\"type\":\"office\",\"number\":\"646 555-4567\"},{\"type\":\"mobile\",\"number\":\"123 456-7890\"}],\"children\":[],\"spouse\":null,\"extra\":\"{\\\"Array\\\":[1,2,3],\\\"Boolean\\\":true,\\\"Null\\\":null,\\\"Number\\\":123,\\\"Object\\\":{\\\"a\\\":\\\"b\\\",\\\"c\\\":\\\"d\\\"},\\\"String\\\":\\\"Hello World\\\"}\"}";
+        
+                    </textarea>
+        </div>
+
+    </p>
+
+    <p>
         <!-- 混乱的json数据-->
-        <textarea id="chaosTextarea"
-            rows="5">{\"firstName\":\"John\",\"lastName\":\"Smith\",\"isAlive\":true,\"age\":27,\"address\":{\"streetAddress\":\"21 2nd Street\",\"city\":\"New York\",\"state\":\"NY\",\"postalCode\":\"10021-3100\",\"area\":\"{\\\\\"Total\\\\\":\\\\\"468.484 sq mi (1,213.37 km2)\\\\\",\\\\\"Land\\\\\":\\\\\"302.643 sq mi (783.84 km2)\\\\\",\\\\\"Water\\\\\":\\\\\"165.841 sq mi (429.53 km2)\\\\\",\\\\\"Metro\\\\\":\\\\\"Hello 13,318 sq mi (34,490 km2)\\\\\"}\"},\"phoneNumbers\":[{\"type\":\"home\",\"number\":\"212 555-1234\"},{\"type\":\"office\",\"number\":\"646 555-4567\"},{\"type\":\"mobile\",\"number\":\"123 456-7890\"}],\"children\":[],\"spouse\":null,\"extra\":\"{\\\\\"Array\\\\\":[1,2,3],\\\\\"Boolean\\\\\":true,\\\\\"Null\\\\\":null,\\\\\"Number\\\\\":123,\\\\\"Object\\\\\":{\\\\\"a\\\\\":\\\\\"b\\\\\",\\\\\"c\\\\\":\\\\\"d\\\\\"},\\\\\"String\\\\\":\\\\\"Hello World\\\\\"}\"}</textarea>
+        <textarea id="chaosTextarea" rows="5"></textarea>
     </p>
 
 
     <p>
-        只显示的字段名 空格隔开 ( firstName postalCode)<input style="width: 80%" id="replacerInput">
+        只显示的字段名 空格隔开 <input style="width: 20%" id="replacerInput"
+            title="replacer of JSON.stringify(value[, replacer [, space]])">
+        只显示的节点名 空格隔开 <input style="width: 20%" id="nodeInput" title="需要显示的节点">
     </p>
     <p>
         间隔符号(默认为4个空格,为空则为一行展示)<input id='space' value="    ">
@@ -53,28 +87,31 @@
 
     <script>
 
-        const demoStr = `2019-07-28 15:52:30.013  INFO 9272 --- [           main] com.example.demo.DemoApplication         : person:{"firstName":"John","lastName":"Smith","isAlive":true,"age":27,"address":{"streetAddress":"21 2nd Street","city":"New York","state":"NY","postalCode":"10021-3100","area":"{\\"Total\\":\\"468.484 sq mi (1,213.37 km2)\\",\\"Land\\":\\"302.643 sq mi (783.84 km2)\\",\\"Water\\":\\"165.841 sq mi (429.53 km2)\\",\\"Metro\\":\\"Hello 13,318 sq mi (34,490 km2)\\"}"},"phoneNumbers":[{"type":"home","number":"212 555-1234"},{"type":"office","number":"646 555-4567"},{"type":"mobile","number":"123 456-7890"}],"children":[],"spouse":null,"extra":"{\\"Array\\":[1,2,3],\\"Boolean\\":true,\\"Null\\":null,\\"Number\\":123,\\"Object\\":{\\"a\\":\\"b\\",\\"c\\":\\"d\\"},\\"String\\":\\"Hello World\\"}"}`;
-
-        const demoStr2 = "{\"firstName\":\"John\",\"lastName\":\"Smith\",\"isAlive\":true,\"age\":27,\"address\":{\"streetAddress\":\"21 2nd Street\",\"city\":\"New York\",\"state\":\"NY\",\"postalCode\":\"10021-3100\",\"area\":\"{\\\\\"Total\\\\\":\\\\\"468.484 sq mi (1,213.37 km2)\\\\\",\\\\\"Land\\\\\":\\\\\"302.643 sq mi (783.84 km2)\\\\\",\\\\\"Water\\\\\":\\\\\"165.841 sq mi (429.53 km2)\\\\\",\\\\\"Metro\\\\\":\\\\\"Hello 13,318 sq mi (34,490 km2)\\\\\"}\"},\"phoneNumbers\":[{\"type\":\"home\",\"number\":\"212 555-1234\"},{\"type\":\"office\",\"number\":\"646 555-4567\"},{\"type\":\"mobile\",\"number\":\"123 456-7890\"}],\"children\":[],\"spouse\":null,\"extra\":\"{\\\\\"Array\\\\\":[1,2,3],\\\\\"Boolean\\\\\":true,\\\\\"Null\\\\\":null,\\\\\"Number\\\\\":123,\\\\\"Object\\\\\":{\\\\\"a\\\\\":\\\\\"b\\\\\",\\\\\"c\\\\\":\\\\\"d\\\\\"},\\\\\"String\\\\\":\\\\\"Hello World\\\\\"}\"}";
-
-
-
-        // chaosTextarea.value = demoStr;
-
-
         let jsons = [];//匹配二维二维数组 0是字符串 1是json对象 2 是对象名
         function radioChange() {
             let replacer = replacerInput.value.split(" ").filter(str => str.length > 0);
+            let node = nodeInput.value.split(" ").filter(str => str.length > 0);
             //console.log(replacer);
             if (replacer.length == 0) {
                 replacer = null;//为空则是全部显示
             }
             let checkValue = document.querySelector('input[name="radio"]:checked');
             checkValue = checkValue ? checkValue.value : 0;//默认为0
-            jsonTextarea.value = JSON.stringify(jsons[checkValue][1], replacer, space.value);
+            let json = jsons[checkValue][1], newJSON = {};
+            if (node.length > 0) {//只显示部分节点  todo 只做根节点判断
+                for (let prop in json) {
+                    if (node.includes(prop)) {
+                        newJSON[prop] = json[prop];
+                    };
+                }
+                json = newJSON;
+            }
+            jsonTextarea.value = JSON.stringify(json, replacer, space.value);
         }
 
+        let extractCount = 0;
         function extract() {
+            extractCount = 0;
             jsons = [];
             let chaosText = chaosTextExtract(chaosTextarea.value);
             if (chaosText && chaosText.length > 0) {
@@ -119,11 +156,12 @@
         /*混乱文本中抽取json 
           返回长度为2的数组 第一位是 文字字符 第二位是json对象
         */
+        let marksPosition;
         function chaosTextExtract(chaosTextStr) {
             //json 的头尾标识
             const marks = [['{', '}'], ['[', ']']];
             //marks 一样长度的多维数组 , 只不过 原来字符 改为字符所在数组
-            let marksPosition = [[[], []], [[], []]];;//匹配json的头尾字符所在位置
+            marksPosition = [[[], []], [[], []]];;//匹配json的头尾字符所在位置
 
             let jsonList = [];//匹配中的json对象 0存放原有字符串 1存放转换后josn对象
 
@@ -138,99 +176,48 @@
             }
 
 
+            //尾部位置数组反转 即 大在前 小在尾
             marksPosition[0][1].reverse();
             marksPosition[1][1].reverse();
 
+            let maxLength = 0;//当前匹配最大json字符
+            //第一层循环 尖括号或者 中括号组
+            for (let i = 0; i < marksPosition.length; i++) {
 
-            marksPosition.forEach(position0 => {
-                position0[0].forEach(position00 => {
-                    position0[1].filter(position01 => position01 > position00).forEach(position01 => {
-                        let text = chaosTextStr.substring(position00, position01 + 1);
-                        try {
-                            let obj = JSON.parse(text);
-                            jsonList.push([text, obj]);
-                        } catch (error) {
-                            //console.log("error:" + text);
+                //第二层for循环是起始位
+                for (let j = 0; j < marksPosition[i][0].length; j++) {
+                    //第三次for循环为终止位
+                    let findFlag = false;//是否已经找到匹配json
+                    //遍历 并且 json 还未找到 
+                    for (let k = 0; k < marksPosition[i][1].length && !findFlag; k++) {
+
+                        // && k > j && (k - j) > maxLength  
+                        let startI = marksPosition[i][0][j];
+                        let endI = marksPosition[i][1][k];
+                        if (endI - startI + 1 > maxLength) {//只有大于当前值才有判断必要
+                            let text = chaosTextStr.substring(startI, endI + 1);
+                            extractCount++;
+                            console.log("substring " + startI + " " + endI);
+                            console.log("text " + text);
                             try {
-                                let textEval = text;
-                                while (true) {
-                                    try {
-                                        let joinStr = "'";//拼接字符默认是单引号
-                                        if(text.conte)
-
-
-                                        textEval = eval("`" + text + "`");
-                                        //console.log('textEval:' + textEval);
-                                    } catch (errorEval) {
-                                        //console.log(errorEval);
-                                    }
-
-                                    if (text == textEval) {//无法再转义了
-                                        //console.log('break1');
-                                        break;
-                                    }
-                                    try {
-                                        let obj = JSON.parse(textEval);
-                                        jsonList.push([textEval, obj]);
-                                        //console.log('break2');
-                                        break;
-                                    } catch (error) {
-
-                                    }
-                                    text = textEval;//下一次循环 
-                                    //console.log("for end")
+                                let obj = JSON.parse(text);
+                                jsonList.push([text, obj]);
+                                findFlag = true;
+                                maxLength = text.length;
+                            } catch (error) {
+                                let jsonEvalR = jsonEval(text);
+                                if (jsonEvalR) {//转义成功有数据
+                                    jsonList.push(jsonEvalR);
+                                    findFlag = true;
+                                    maxLength = jsonEvalR[0].length;
                                 }
-                            } catch (error2) {
-
                             }
-
                         }
-                    });
-                });
-            });
-
-            // marksPosition.forEach(position0 => {
-            //     position0[0].forEach(position00 => {
-
-            //         let findFlag = false;//是否已经找到json
-            //         //下标未达到 且 比启示大 且 还未找到
-            //         for (let i = 0; i < position0[1].length && position0[1][i] > position00 && !findFlag; i++) {
-            //             let text = chaosTextStr.substring(position00, position0[1][i] + 1);
-            //             //console.log("chaosTextStr.substring");
-            //             try {
-            //                 // //console.log("position:" + position00 + "  " + position01);
-            //                 // //console.log("text:" + text);
-            //                 let obj = JSON.parse(text);
-            //                 jsonList.push([text, obj]);
-            //                 findFlag = true;
-            //             } catch (error) {
-            //                 //含有转义字符 Ps.第一位不可能为转义字符
-            //                 // if (text.indexOf("\\") > 0) {
-            //                 //     try {
-            //                 //         text = eval("'" + text + "'");
-            //                 //         //console.log("try text:" + text);
-            //                 //         let obj = JSON.parse(text);
-            //                 //         jsonList.push([text, obj]);
-            //                 //     } catch (error2) {
-            //                 //         //console.log(error2);
-
-            //                 //     }
-            //                 // }
-            //                 //尝试转义
-            //                 // //console.log(error);
-
-            //             }
-
-            //         }
+                    }
+                }
+            }
 
 
-            //         // position0[1].filter(position01 => position01 > position00).forEach(position01 => {
-
-            //         // });
-
-
-            //     });
-            // });
             //排序
             //console.log(jsonList);
             jsonList.sort((a, b) => b[0].length - a[0].length);
@@ -241,6 +228,61 @@
             return null;
         }
 
+        //判断字符是否是转义后的json
+        let jsonEvalCount = 0;
+        function jsonEval(text) {
+            //还有转义字符
+            let interval = '`', interval2 = "间隔字符", interval2Flag = false;//间隔字符 
+            if (text.indexOf('\\') > 0) {//包含转义字符
+                if (text.indexOf(interval) >= 0) {//含有字符串间隔符号 则变换
+                    while (text.indexOf(interval2) > 0) {
+                        interval2 += interval2;//累加自己
+                    }
+                    interval2Flag = true;
+                    text = text.replace(new RegExp("`", "gi"), interval2);
+                }
+
+                console.log('转义字符判断 占位符替换 为:' + interval2);
+            }
+
+            let textEval = "", flag = false, obj;
+            while (true) {
+                jsonEvalCount++;
+                //尝试转义 报错则跳出循环
+                try {
+                    textEval = eval("`" + text + "`");
+                } catch (errorEval) {
+                    break;
+                }
+                //找到转义后字符是json
+                try {
+                    obj = JSON.parse(textEval);
+                    flag = true;
+                    break;
+                } catch (error) {
+
+                }
+                //转义后字符并没有变化
+                if (text == textEval) {//无法再转义了
+                    //console.log('break1');
+                    break;
+                }
+                text = textEval;//下一次循环 
+                //console.log("for end")
+            }
+
+            //匹配了转义字符
+            if (flag) {
+
+                if (interval2Flag) {//占位符号转换回来
+                    textEval = textEval.replace(new RegExp(interval2, "gi"), "`");
+                }
+                console.log("匹配转义后JSON:" + textEval);
+                return [textEval, obj];
+            } else {
+                return null;
+            }
+        }
 
 
     </script>
