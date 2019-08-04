@@ -7,22 +7,27 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>json 查看</title>
     <style>
-        p {
-            margin: 1em auto;
-            width: 90%;
-        }
 
-        textarea {
-            width: 100%;
-        }
     </style>
 </head>
 
 <body>
 
-    <p>
+    <form>
+
         <details>
             <summary>说明</summary>
+
+            <li>
+                火狐 title 属性只能显示 前72个字符
+
+                <a href='http://forums.mozillazine.org/viewtopic.php?f=9&t=69096'>Limited length of title attribute? •
+                    mozillaZine Forums </a>
+                ,
+                <a href='https://bugzilla.mozilla.org/show_bug.cgi?id=45375'> SeaMonkey-only bug: Long tooltips should
+                    wrap instead of being cropped (multiline tooltips) </a>
+
+            </li>
 
 
             测试数据
@@ -51,102 +56,396 @@
                     </textarea>
         </div>
 
-    </p>
 
-    <p>
-        <!-- 混乱的json数据-->
-        <textarea id="chaosTextarea" rows="5"></textarea>
-    </p>
+        <p>
+            <!-- 混乱的json数据-->
+            <textarea id="chaosTextarea" rows="5" name='chaosTextarea' style="width: 100%;"></textarea>
+        </p>
 
 
-    <p>
-        只显示的字段名 空格隔开 <input style="width: 20%" id="replacerInput"
-            title="replacer of JSON.stringify(value[, replacer [, space]])">
-        只显示的节点名 空格隔开 <input style="width: 20%" id="nodeInput" title="需要显示的节点">
-    </p>
-    <p>
-        间隔符号(默认为4个空格,为空则为一行展示)<input id='space' value="    ">
-    </p>
+        <p>
+            只显示的字段名 空格隔开
+            <input style="width: 20%" id="replacerInput" name="replacerInput">
+            间隔符号(默认为4个空格,为空则为一行展示)
+            <input id='spaceInput' name='spaceInput' value="    ">
+            ,
+            Powered by <code>JSON.stringify(value[, <strong>replacer</strong> [, <strong> space </strong>]])</code>
+        </p>
+        <p>
+            只显示的节点名 空格隔开
+            <input style="width: 20%" id="nodeInput" name="nodeInput" title="需要显示的节点">
+            ,递归提取所有符合的节点 。
 
-    <p>
-        <strong>选择json数据</strong>
 
-        <span id="radioSpan">
-        </span>
+            &nbsp;&nbsp;&nbsp;&nbsp;
 
-    </p>
+            <input type="checkbox" value='on' name='jsonTextareaWhiteSpace' id='jsonTextareaWhiteSpace'
+                onchange="displayChange()">
+            软换行
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <input onclick="displayChange()" style="font-size: x-large" type="button" value="提取" /> &nbsp;&nbsp;
+            <input onclick="displayChange()" type="button" style="font-size: x-large" value="显示"> &nbsp;&nbsp;
+            <input type="submit" style="font-size: x-large" value="提交">
 
-    <p>
-        <button onclick="extract()" style="font-size: x-large"> 提取 展示 </button>
-    </p>
+        </p>
 
-    <p>
-        <!--格式化展示的数据-->
-        <textarea id="jsonTextarea" rows="40"></textarea>
-    </p>
+        <div style="float:left; width: 20%;  overflow:visible;z-index: 10;">
+            <strong>选择json数据</strong>
+            <ul id="radioSpan"> </ul>
+            <br>
+            <strong>选择json节点</strong>
+            <ul id="radioSpan2"> </ul>
+        </div>
 
+        <div style="float:right;width: 80%;">
+            <!--格式化展示的数据-->
+            <textarea id="jsonTextarea" rows="40" style="width: 100%;white-space:pre;"></textarea>
+        </div>
+
+
+    </form>
     <script>
+        let form;//暂存数据  
+        let jsons = [];//匹配二维二维数组 0是字符串(显示可变) 1是json对象(提取后不变) 2 是对象数组
+        let jsonNodes = [], nodes = "", jsonNode1 = null;//同上
 
-        let jsons = [];//匹配二维二维数组 0是字符串 1是json对象 2 是对象名
-        function radioChange() {
-            let replacer = replacerInput.value.split(" ").filter(str => str.length > 0);
-            let node = nodeInput.value.split(" ").filter(str => str.length > 0);
-            //console.log(replacer);
-            if (replacer.length == 0) {
-                replacer = null;//为空则是全部显示
+
+        //显示更改主动传入执行
+        //steps 可为空 , 如果传入则会主动执行
+        function displayChange(steps) {
+
+            console.log('displayChange start :' + steps);
+
+            //防止空指针 , 默认事件上进来的的 ObjectEvent
+            if (!Array.isArray(steps)) {
+                steps = [];
             }
-            let checkValue = document.querySelector('input[name="radio"]:checked');
-            checkValue = checkValue ? checkValue.value : 0;//默认为0
-            let json = jsons[checkValue][1], newJSON = {};
-            if (node.length > 0) {//只显示部分节点  todo 只做根节点判断
-                for (let prop in json) {
-                    if (node.includes(prop)) {
-                        newJSON[prop] = json[prop];
-                    };
+
+            let check = document.querySelector('input[name="radio"]:checked');
+            let checkValue = check ? check.value : 0;//默认为0
+
+            let check2 = document.querySelector('input[name="radio2"]:checked');
+            let checkValue2 = check2 ? check2.value : 0;//默认为0
+
+            let preCheckValue = form.get('radio') || 0;
+            let preCheckValue2 = form.get('radio2') || 0;
+
+            //JSON展示框数据修改过了
+            if (jsonNodes.length > 0 && jsonTextarea.value != jsonNodes[preCheckValue2][0]) {
+                console.log('jsonTextarea change');
+
+                let obj, objChange;
+                try {
+                    let obj1 = jsons[preCheckValue][1];
+                    let obj2 = jsonNodes[preCheckValue2][1];//当前对象
+                    objChange = JSON.parse(jsonTextarea.value);//修改后对象
+                    if (preCheckValue2 > 0) {//更改的是子节点
+                        obj = obj1;
+                    } else {//更改的是
+                        obj = obj2;
+                    }
+                } catch (error) {
+                    alert("格式化变更JSON异常:" + error);
                 }
-                json = newJSON;
+
+                if (obj) {
+
+                    console.log("objChange:" + objChange);
+                    //解构赋值 对象会变化
+                    // var { ...obj } = objChange;
+                    //[Object.assign() - JavaScript | MDN](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/assign)
+                    Object.assign(obj, objChange);
+                    let keysChange = Object.keys(objChange);
+                    //移除更改中不存在的属性
+                    Object.keys(obj)
+                        .filter(key => keysChange.indexOf(key) == -1)
+                        .forEach(key => delete ojb[key]);
+
+                    console.log(`obj==json[pre][1] ${obj == jsons[preCheckValue][1]}`);
+                    console.log(jsons[preCheckValue][1]);
+
+                    console.log('preCheckValue ' + preCheckValue);
+                    //选择前一次目标
+                    if (preCheckValue > 0) {
+
+                        /** 
+                        main
+                        main.a
+                        main.a.b
+                        main.a.b.c.d.e
+                        main.a.b.c.d.e.f
+                        main.g
+                        **/
+                        //倒着遍历回属性
+                        let pre = jsons[preCheckValue];//默认当前对象
+                        for (let i = preCheckValue - 1; i >= 0; i--) {
+                            //长度显然不可能是父节点跳过
+                            if (pre[2].length <= jsons[i][2].length) {
+                                console.log('长度 不符合 不是父节点');
+                                break;
+                            }
+                            //拷贝属性列表
+                            let nameList = [...jsons[i][2]];//赋值名字列表
+
+                            console.log(`nameList ${nameList.join(' ')}`)
+                            console.log(`pre[2] ${pre[2].join(' ')}`)
+                            //从尾到头遍历两个数组 判断是否是父节点
+                            for (let j = jsons[i][2].length - 1; j >= 0; j--) {
+
+                                console.log(`j ${j} : ${jsons[i][2][j]} == ${pre[2][j]}`);
+                                if (jsons[i][2][j] == pre[2][j]) {
+                                    ;//移除最后一个
+                                    console.log(nameList.pop())
+                                } else {
+                                    console.log(`节点名不一致 不是父节点 ${jsons[i][2][j]} != ${nameList[j]}`);
+                                    break;//此节点不是前节点的父节点
+                                }
+                            }
+                            //如果是父节点 此时长度 应该刚好等于 
+                            if (nameList.length != 0) {
+                                console.log('裁剪后长度不符合 不是父节点');
+                                break;
+                            }
+                            nameList = pre[2].slice(jsons[i][2].length);
+                            // a[b][c][d]
+                            let pop = jsons[i][1];
+                            console.log(`nameList ${nameList.join(' ')}`)
+                            for (let k = 0; k < nameList.length - 1; k++) {
+                                console.log("pop:" + pop);
+                                console.log("pop pop:" + nameList[k]);
+                                pop = pop[nameList[k]];
+                                console.log("pop:" + pop);
+                            }
+                            //最后一个 String 赋值
+                            pop[nameList[nameList.length - 1]] = JSON.stringify(pre[1]);
+                            console.log('需要重新赋值' + pre[1]);
+                            console.log(`重新赋值 属性名 ${nameList[nameList.length - 1]} 属性值 ${pop[nameList[nameList.length - 1]]}`);//
+                            pre = jsons[i];
+                        }
+                        console.log('向前重新赋值结束');
+                    }
+
+                    //仅仅保留最开始的一个
+                    jsons = [jsons[0]];
+                    //重新开始递归抽取
+                    extractObj(jsons[0][1], ['main']);//递归抽取
+                    radioSpanInit();
+
+                    console.log("重新生成radio后再次选中目标" + checkValue);
+                    document.querySelectorAll('input[name="radio"]')
+                        .forEach((radio, index) => {
+                            if (radio.value == checkValue)
+                                radio.checked = true;
+                        });
+
+                    steps = [...steps, 'nodeInput', 'replacerInput', 'radio'];//需要进行的后续操作
+                }
             }
-            jsonTextarea.value = JSON.stringify(json, replacer, space.value);
+
+
+            check = document.querySelector('input[name="radio"]:checked');
+            checkValue = check ? check.value : 0;//默认为0
+            //原始字符串 变更 重新抽取 JSON
+            if (steps.indexOf('chaosTextarea') >= 0 || chaosTextarea.value != form.get('chaosTextarea')) {
+                console.log('displayChange chaosTextarea');
+                jsons = [];//clear
+                let chaosText = chaosTextExtract(chaosTextarea.value);
+                if (chaosText && chaosText.length > 0) {
+                    jsons.push([...chaosText, ['main']]);//注入第一个
+                    extractObj(jsons[0][1], ['main']);//递归抽取
+                }
+                if (chaosTextarea.value > 0 && jsons.length == 0) {
+                    alert('not find json');
+                }
+                radioSpanInit();
+
+                steps = [...steps, 'nodeInput', 'replacerInput', 'radio'];//需要进行的后续操作
+            }
+
+            //先跳出
+            if (jsons.length == 0) {
+                return;
+            }
+
+
+            check = document.querySelector('input[name="radio"]:checked');
+            checkValue = check ? check.value : 0;//默认为0
+            //选择的JSON数据更改 或者 显示节点输入更改 , 需要重新提取子节点
+            if ((check && (steps.indexOf('radio') >= 0 || checkValue != form.get('radio')))
+                || (steps.indexOf('nodeInput') >= 0 || nodeInput.value != form.get('nodeInput'))) {
+                console.log('displayChange nodeInput checkValue:' + checkValue);
+                let json = jsons[checkValue][1];
+                let node = nodeInput.value.split(" ").filter(str => str.length > 0);
+                jsonNodes = [];//清空
+                jsonNodes.push(['', json, ['main(all)']]);
+                steps = [...steps, 'replacerInput'];//重新格式化
+                if (node.length > 0) {
+                    //对象节点提取
+                    objNode(json, node, ['main']);
+                }
+                radioSpan2Init();
+
+            }
+
+            check2 = document.querySelector('input[name="radio2"]:checked');
+            checkValue2 = check2 ? check2.value : 0;//默认为0
+            //显示字段更改 或者 间隔字符更改 重新生成 字符
+            if (steps.indexOf('replacerInput') >= 0 || (replacerInput.value != form.get('replacerInput'))
+                || (spaceInput.value != form.get('spaceInput'))) {
+                console.log('displayChange replacerInput');
+                let replacer = replacerInput.value.split(" ").filter(str => str.length > 0);
+                if (replacer.length == 0) {
+                    replacer = null;//为空则是全部显示
+                }
+                jsons.forEach(json => json[0] = JSON.stringify(json[1], replacer, spaceInput.value));
+                jsonNodes.forEach(json => json[0] = JSON.stringify(json[1], replacer, spaceInput.value));
+                steps = [...steps, 'radio', 'radio2'];
+            }
+
+            //选择json数据 
+            if (check && (steps.indexOf('radio') >= 0 || checkValue != form.get('radio'))) {
+                console.log('displayChange radio');
+                jsonTextarea.value = jsons[checkValue][0];
+            }
+            //选择json节点
+            if (check2 && (steps.indexOf('radio2') >= 0 || checkValue2 != form.get('radio2'))) {
+                console.log('displayChange radio2');
+                jsonTextarea.value = jsonNodes[checkValue2][0];
+            }
+
+            let jsonTextareaWhiteSpace = document.getElementById('jsonTextareaWhiteSpace');
+            //软换行
+            if ((jsonTextareaWhiteSpace.checked && !form.get('jsonTextareaWhiteSpace'))
+                || (!jsonTextareaWhiteSpace.checked && form.get('jsonTextareaWhiteSpace'))) {
+                console.log('displayChange jsonTextareaWhiteSpace');
+                jsonTextarea.style['white-space'] = jsonTextareaWhiteSpace.checked ? '' : 'pre';
+            }
+            //保存数据
+            form = new FormData(document.querySelector("form"));
+        }
+
+
+        /*****
+                function radioChange() {
+                    jsonNodes = [];
+                    let replacer = replacerInput.value.split(" ").filter(str => str.length > 0);
+                    let node = nodeInput.value.split(" ").filter(str => str.length > 0);
+                    //console.log(replacer);
+                    if (replacer.length == 0) {
+                        replacer = null;//为空则是全部显示
+                    }
+                    let checkValue = document.querySelector('input[name="radio"]:checked');
+                    checkValue = checkValue ? checkValue.value : 0;//默认为0
+                    let json = jsons[checkValue][1], newJSON = {};
+                    if (node.length > 0) {//只显示部分节点  todo 只做根节点判断
+                        //对象节点提取
+                        objNode(json, node, ['main'])
+                        if (jsonNodes.length > 0) {
+                            radioSpan2.innerHTML = jsonNodes.
+                                map((jsonInfo, index) => `
+                                <li  style='padding-left:${jsonInfo[2].length - 1}em;'  title="${jsonInfo[2].join('.')}">
+                                  <input type="radio" name='radio2' value="${index}"> ${jsonInfo[2][jsonInfo[2].length - 1]}  
+                                </li>
+                                 `)
+                                .reduce((acc, cur, idx) => acc += cur);
+                            document.querySelectorAll('input[name="radio2"]').forEach(radio => radio.addEventListener('change', radioChange2));
+                        }
+                    }
+                    jsonTextarea.value = JSON.stringify(json, replacer, spaceInput.value);
+                }
+        
+                function radioChange2() {
+                    let checkValue = document.querySelector('input[name="radio"]:checked');
+                    let checkValue2 = document.querySelector('input[name="radio2"]:checked');
+                    checkValue2 = checkValue2 ? checkValue2.value : 0;//默认为0
+                    jsonTextarea.value = JSON.stringify(jsonNodes[checkValue2][1], null, spaceInput.value);
+                }
+        
+                ***/
+
+        /***
+        obj 对象
+        node 节点列表
+        **/
+        function objNode(obj, node, names) {
+            let newObj = {};
+            for (let prop in obj) {
+                if (node.includes(prop)) {
+                    newObj[prop] = obj[prop];
+                }
+                if (typeof obj[prop] === 'object') {
+                    objNode(obj[prop], node, [...names, prop]);
+                }
+            }
+            if (Object.keys(newObj).length > 0) {
+                jsonNodes.push(['', newObj, names]);
+            }
         }
 
         let extractCount = 0;
-        function extract() {
-            extractCount = 0;
-            jsons = [];
-            let chaosText = chaosTextExtract(chaosTextarea.value);
-            if (chaosText && chaosText.length > 0) {
-                jsons.push([...chaosText, 'main']);
-                extractObj(chaosText[1], 'main');
-            }
+        //初始化
+        function radioSpanInit() {
             if (jsons.length == 0) {
-                alert('not find json');
-            } else {
-                radioSpan.innerHTML = jsons.
-                    map((jsonInfo, index) => ` <input type="radio" name='radio' value="${index}"> ${jsonInfo[2]}   `)
-                    .reduce((acc, cur, idx) => acc += cur);
-                document.querySelectorAll('input[name="radio"]').forEach(radio => radio.addEventListener('change', radioChange));
-                radioChange();
+                radioSpan.innerHTML = '';//清空项目
+                return;
             }
+            //  <li style="padding-left:2em;"> <input type="radio" name="radio" value="1" title="main.address.area">  area  </li>
+            // ${''.padEnd(jsonInfo[2].length * 6, "&nbsp;")} //使用空格补全
+            //重新初始化
+            radioSpan.innerHTML = jsons
+                .map((jsonInfo, index) => `
+                     <li title="${jsonInfo[2].join('.')}">
+                         <input type="radio" name='radio' value="${index}"> 
+                         ${''.padEnd(jsonInfo[2].length * 6, "&nbsp;")}
+                         ${jsonInfo[2][jsonInfo[2].length - 1]}   
+                    </li>`)
+                .reduce((acc, cur, idx) => acc += cur);
 
+            //绑定事件 并且默认选中第一项
+            document.querySelectorAll('input[name="radio"]')
+                .forEach((radio, index) => {
+                    if (index == 0)
+                        radio.checked = true;
+                    radio.addEventListener('change', displayChange);
+                });
+        }
+
+        function radioSpan2Init() {
+            if (jsonNodes.length == 0) {
+                radioSpan2.innerHTML = '';
+                return;
+            }
+            radioSpan2.innerHTML = jsonNodes.
+                map((jsonInfo, index) => `
+                        <li title="${jsonInfo[2].join('.')}">
+                          <input type="radio" name='radio2' value="${index}"> 
+                          ${''.padEnd(jsonInfo[2].length * 6, "&nbsp;")}
+                          ${jsonInfo[2][jsonInfo[2].length - 1]}  
+                        </li>
+                         `)
+                .reduce((acc, cur, idx) => acc += cur);
+            //重新绑定事件 不需要默认选中
+            document.querySelectorAll('input[name="radio2"]')
+                .forEach(radio => radio.addEventListener('change', displayChange));
 
         }
 
         //对象提取 json
         //obj 提取的对象
-        //name 提取的对象名
-        function extractObj(obj, name) {
+        //name 提取的对象名 数组
+        function extractObj(obj, names) {
             for (let prop in obj) {
                 //如果此属性是 字符串 判断是否是json
                 if (typeof obj[prop] === 'string') {
                     //console.log('String ' + obj[prop]);
                     let chaosText2 = chaosTextExtract(obj[prop]);
                     if (chaosText2 && chaosText2.length > 0) {
-                        jsons.push([...chaosText2, name + '.' + prop]);
-                        extractObj(chaosText2[1], name + '.' + prop);
+                        jsons.push([...chaosText2, [...names, prop]]);
+                        extractObj(chaosText2[1], [...names, prop]);
                     }
                 } else if (typeof obj[prop] === 'object') {
                     //递归调用
-                    extractObj(obj[prop], name + '.' + prop);
+                    extractObj(obj[prop], [...names, prop]);
                 }
                 //console.log("obj." + prop + " = " + obj[prop]);
             }
@@ -204,6 +503,7 @@
                                 jsonList.push([text, obj]);
                                 findFlag = true;
                                 maxLength = text.length;
+                                break;//当前左边 匹配的最长右边 不需要再遍历右边了
                             } catch (error) {
                                 let jsonEvalR = jsonEval(text);
                                 if (jsonEvalR) {//转义成功有数据
@@ -284,7 +584,29 @@
             }
         }
 
+        let windowsUrl = new URL(window.location.href);;//当前路径url
+        const load = async () => {
+            let param;
+            //将参数设置到页面元素中
+            for (param of windowsUrl.searchParams) {
+                if (param[1] && param[1].length > 0) {
+                    let element = document.getElementById(param[0]);
+                    if (element) {
+                        element.value = param[1];
+                    }
+                }
+            }
 
+            //软换行
+            param = windowsUrl.searchParams.get("jsonTextareaWhiteSpace");
+            if (param && param == 'on') {
+                jsonTextareaWhiteSpace.checked = true;
+                jsonTextarea.style['white-space'] = this.checked ? '' : 'pre';
+            }
+            form = new FormData();
+            displayChange();
+        }
+        window.onload = load;//初始化
     </script>
 </body>
 
