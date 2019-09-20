@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Monaco Editor Playground</title>
+    <style>
+        #menu,
+        #diff-editor {
+            margin: 5px auto;
+            width: 99%;
+        }
+
+        #diff-editor {
+
+            height: 95vh;
+            border: 1px solid grey
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="menu">
+
+
+
+        <label class="control-label">Language</label>
+        <select id="language-picker" onchange="changeLanguage(this)"></select>
+
+        <label class="control-label">Theme</label>
+        <select id="theme-picker" onchange="changeTheme(this)">
+            <option value="vs">Visual Studio</option>
+            <option value="vs-dark">Visual Studio Dark</option>
+            <option value="vs-dark">High Contrast Dark</option>
+        </select>
+
+        <input id="inline-diff-checkbox" type="checkbox" value="" onchange="changeInline(this)"> Inline diff
+    </div>
+
+    <div id="loading">
+        <div class="spinner">
+            <div class="rect1"></div>
+            <div class="rect2"></div>
+            <div class="rect3"></div>
+            <div class="rect4"></div>
+            <div class="rect5"></div>
+        </div>
+    </div>
+
+    <section id="playground">
+    </section>
+
+    <!-- OR ANY OTHER AMD LOADER HERE INSTEAD OF loader.js -->
+    <script src="../lib/monaco-editor-0.18.1/min/vs/loader.js"></script>
+
+    <script data-inline="yes-please" src="../lib/monaco-editor-website/./playground/new-samples/all.js"></script>
+    <script data-inline="yes-please" src="monaco-playground.js"></script>
+
+    <script>
+        require.config({ paths: { 'vs': '../lib/monaco-editor-0.18.1/min/vs' } });
+
+
+        function changeTheme(obj) {
+            monaco.editor.setTheme(obj.value);
+        }
+
+    </script>
+
+
+</body>
+
+</html>

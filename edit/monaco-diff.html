@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>monaco editor diff</title>
+    <style>
+        #menu,
+        #diff-editor {
+            margin: 5px auto;
+            width: 99%;
+        }
+
+        #diff-editor {
+
+            height: 95vh;
+            border: 1px solid grey
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="menu">
+
+
+
+        <label class="control-label">Language</label>
+        <select id="language-picker" onchange="changeLanguage(this)"></select>
+
+        <label class="control-label">Theme</label>
+        <select id="theme-picker" onchange="changeTheme(this)">
+            <option value="vs">Visual Studio</option>
+            <option value="vs-dark">Visual Studio Dark</option>
+            <option value="vs-dark">High Contrast Dark</option>
+        </select>
+
+        <input id="inline-diff-checkbox" type="checkbox" value="" onchange="changeInline(this)"> Inline diff
+    </div>
+
+    <div id="diff-editor"></div>
+
+    <!-- OR ANY OTHER AMD LOADER HERE INSTEAD OF loader.js -->
+    <script src="../lib/monaco-editor-0.18.1/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { 'vs': '../lib/monaco-editor-0.18.1/min/vs' } });
+
+        let diffEditor;
+        require(['vs/editor/editor.main'], function () {
+
+            diffEditor = monaco.editor.createDiffEditor(document.getElementById('diff-editor'));
+
+            diffEditor.setModel({
+                original: monaco.editor.createModel(ES5.toSource(), 'javascript'),
+                modified: monaco.editor.createModel(ES6.toSource(), 'javascript'),
+            });
+            diffEditor.originalEditor.updateOptions({ readOnly: false });
+
+            var languages = monaco.languages.getLanguages().map(function (lang) { return lang.id; }).sort();
+            document.getElementById('language-picker')
+                .insertAdjacentHTML('afterbegin',
+                    languages.map(language => `<option value="${language}">${language}</option>`).join());
+            document.getElementById('language-picker').value = 'javascript'
+        });
+
+        function changeLanguage(obj) {
+            monaco.editor.setModelLanguage(diffEditor.originalEditor.getModel(), obj.value);
+            monaco.editor.setModelLanguage(diffEditor.modifiedEditor.getModel(), obj.value);
+        }
+        function changeTheme(obj) {
+            monaco.editor.setTheme(obj.value);
+        }
+        function changeInline(obj) {
+            diffEditor.updateOptions({
+                renderSideBySide: !obj.checked
+            });
+            diffEditor.originalEditor.updateOptions({ readOnly: false });
+        }
+
+        function ES5() {
+            var elements = [
+                'Hydrogen',
+                'Helium',
+                'Lithium',
+                'Beryllium'
+            ];
+
+            elements.map(function (element) {
+                return element.length;
+            });
+        }
+
+        function ES6() {
+            var elements = [
+                'Hydrogen',
+                'Helium',
+                'Lithium',
+                'Beryllium'
+            ];
+
+            elements.map(element => element.length);
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>monaco editor</title>
+    <style>
+        #menu,
+        #container {
+            margin: 5px auto;
+            width: 99%;
+        }
+
+        #container {
+
+            height: 95vh;
+            border: 1px solid grey
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="menu">
+
+        <label class="control-label">Language</label>
+        <select class="language-picker"></select>
+
+        <label class="control-label">Theme</label>
+        <select class="theme-picker">
+            <option>Visual Studio</option>
+            <option>Visual Studio Dark</option>
+            <option>High Contrast Dark</option>
+        </select>
+
+    </div>
+
+    <div id="container"></div>
+
+
+
+
+    <script src="../lib/jquery-3.4.1.min.js"></script>
+    <!-- OR ANY OTHER AMD LOADER HERE INSTEAD OF loader.js -->
+    <script src="../lib/monaco-editor-0.18.1/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { 'vs': '../lib/monaco-editor-0.18.1/min/vs' } });
+
+        let editor;
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('container'), {
+                value: [
+                    'function x() {',
+                    '\tconsole.log("Hello world!");',
+                    '}'
+                ].join('\n'),
+                language: 'javascript'
+            });
+
+
+            var MODES = (function () {
+                var modesIds = monaco.languages.getLanguages().map(function (lang) { return lang.id; });
+                modesIds.sort();
+
+                return modesIds.map(function (modeId) {
+                    return {
+                        modeId: modeId,
+                        sampleURL: '../lib/monaco-editor-website/'
+                            + 'index/samples/sample.' + modeId + '.txt'
+                    };
+                });
+            })();
+
+            var startModeIndex = 0;
+            for (var i = 0; i < MODES.length; i++) {
+                var o = document.createElement('option');
+                o.textContent = MODES[i].modeId;
+                if (MODES[i].modeId === 'typescript') {
+                    startModeIndex = i;
+                }
+                $(".language-picker").append(o);
+            }
+            $(".language-picker")[0].selectedIndex = startModeIndex;
+            loadSample(MODES[startModeIndex]);
+            $(".language-picker").change(function () {
+                loadSample(MODES[this.selectedIndex]);
+            });
+
+            $(".theme-picker").change(function () {
+                changeTheme(this.selectedIndex);
+            });
+
+            // loadDiffSample();
+
+            $('#inline-diff-checkbox').change(function () {
+                diffEditor.updateOptions({
+                    renderSideBySide: !$(this).is(':checked')
+                });
+            });
+
+        });
+
+        var preloaded = {};
+        (function () {
+            var elements = Array.prototype.slice.call(document.querySelectorAll('pre[data-preload]'), 0);
+
+            elements.forEach(function (el) {
+                var path = el.getAttribute('data-preload');
+                preloaded[path] = el.innerText || el.textContent;
+                el.parentNode.removeChild(el);
+            });
+        })();
+
+        function xhr(url, cb) {
+            if (preloaded[url]) {
+                return cb(null, preloaded[url]);
+            }
+            $.ajax({
+                type: 'GET',
+                url: url,
+                dataType: 'text',
+                error: function () {
+                    cb(this, null);
+                }
+            }).done(function (data) {
+                cb(null, data);
+            });
+        }
+
+
+        function loadSample(mode) {
+            $('.loading.editor').show();
+            xhr(mode.sampleURL, function (err, data) {
+                if (err) {
+                    if (editor) {
+                        if (editor.getModel()) {
+                            editor.getModel().dispose();
+                        }
+                        editor.dispose();
+                        editor = null;
+                    }
+                    $('.loading.editor').fadeOut({ duration: 200 });
+                    $('#editor').empty();
+                    $('#editor').append('<p class="alert alert-error">Failed to load ' + mode.modeId + ' sample</p>');
+                    return;
+                }
+
+                if (!editor) {
+                    $('#editor').empty();
+                    editor = monaco.editor.create(document.getElementById('editor'), {
+                        model: null,
+                    });
+                }
+
+                var oldModel = editor.getModel();
+                var newModel = monaco.editor.createModel(data, mode.modeId);
+                editor.setModel(newModel);
+                if (oldModel) {
+                    oldModel.dispose();
+                }
+                $('.loading.editor').fadeOut({ duration: 300 });
+            })
+        }
+
+        function changeTheme(theme) {
+            var newTheme = (theme === 1 ? 'vs-dark' : (theme === 0 ? 'vs' : 'hc-black'));
+            monaco.editor.setTheme(newTheme);
+        }
+    </script>
+</body>
+
+</html>
