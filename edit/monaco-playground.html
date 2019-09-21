@@ -6,40 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Monaco Editor Playground</title>
-    <style>
-        #menu,
-        #diff-editor {
-            margin: 5px auto;
-            width: 99%;
-        }
+    <link data-inline="yes-please" href="../lib/monaco-editor-website/./lib/bootstrap-cosmo.css" rel="stylesheet" />
+	<link data-inline="yes-please" href="../lib/monaco-editor-website/./lib/bootstrap-responsive.min.css" rel="stylesheet" />
+	<link data-inline="yes-please" href="../lib/monaco-editor-website/./all.css" rel="stylesheet" type="text/css" />
+	<link data-inline="yes-please" href="../lib/monaco-editor-website/./playground/spinner.css" rel="stylesheet" />
+	<link data-inline="yes-please" href="../lib/monaco-editor-website/./playground/playground.css" rel="stylesheet" />
 
-        #diff-editor {
-
-            height: 95vh;
-            border: 1px solid grey
-        }
-    </style>
+	<link data-name="vs/editor/editor.main" rel="stylesheet" href="../lib/monaco-editor-0.18.1/dev/vs/editor/editor.main.css">
+     
 </head>
 
-<body>
-
-    <div id="menu">
-
-
-
-        <label class="control-label">Language</label>
-        <select id="language-picker" onchange="changeLanguage(this)"></select>
-
-        <label class="control-label">Theme</label>
-        <select id="theme-picker" onchange="changeTheme(this)">
-            <option value="vs">Visual Studio</option>
-            <option value="vs-dark">Visual Studio Dark</option>
-            <option value="vs-dark">High Contrast Dark</option>
-        </select>
-
-        <input id="inline-diff-checkbox" type="checkbox" value="" onchange="changeInline(this)"> Inline diff
-    </div>
-
+<body class="playground-page">
+  
     <div id="loading">
         <div class="spinner">
             <div class="rect1"></div>
@@ -61,11 +39,7 @@
 
     <script>
         require.config({ paths: { 'vs': '../lib/monaco-editor-0.18.1/min/vs' } });
-
-
-        function changeTheme(obj) {
-            monaco.editor.setTheme(obj.value);
-        }
+ 
 
     </script>
 

@@ -6,7 +6,7 @@
 
 	window.onload = function () {
 		require(['vs/editor/editor.main'], function () {
-			xhr('playground/monaco.d.ts.txt').then(function (response) {
+			xhr('../lib/monaco-editor-website/playground/monaco.d.ts.txt').then(function (response) {
 				monaco.languages.typescript.javascriptDefaults.addExtraLib(response.responseText, 'monaco.d.ts');
 				monaco.languages.typescript.javascriptDefaults.addExtraLib([
 					'declare var require: {',
@@ -222,7 +222,7 @@
 				return callback(new Error('sample not found'));
 			}
 
-			samplePath = 'playground/new-samples/' + samplePath;
+			samplePath = '../lib/monaco-editor-website/'+'playground/new-samples/' + samplePath;
 
 			var js = xhr(samplePath + '/sample.js').then(function (response) { return response.responseText });
 			var css = xhr(samplePath + '/sample.css').then(function (response) { return response.responseText });
@@ -319,7 +319,7 @@
 		// Load new iframe
 		runIframe = document.createElement('iframe');
 		runIframe.id = 'runner';
-		runIframe.src = 'playground/playground-runner.html';
+		runIframe.src ='../lib/monaco-editor-website/'+ 'playground/playground-runner.html';
 		runIframe.className = 'run-iframe';
 		runIframe.style.boxSizing = 'border-box';
 		runIframe.style.height = runIframeHeight + 'px';
